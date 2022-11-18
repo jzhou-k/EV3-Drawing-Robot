@@ -1,0 +1,20 @@
+#include <font.defs>
+#include <media.defs>
+{
+  Manufacturer "4-33"
+  ModelName "EV3"
+  PCFileName "ev3Printer2022.ppd"
+  Version 1.0
+  Attribute "NickName" "" "EV3 Printer 2022"
+
+  Filter "application/vnd.cups-raster 100 makeEV3File"
+  *Resolution - 8 0 0 0 16dpi
+  ColorModel Gray/Grayscale w chunky 0
+
+  *MediaSize Letter
+
+  // VariablePaperSize Yes
+  // HWMargins 0.00 0.00 0.00 0.00
+  // MinSize 0.00 0.00
+  // MaxSize 0.00 0.00
+}
