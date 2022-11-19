@@ -1,10 +1,31 @@
 #!/usr/bin/env python3
 import sys
+import os
+import datetime
+import glob
 from collections import namedtuple
 from struct import unpack
 
-# import numpy as np
-# from PIL import Image
+import numpy as np
+from PIL import Image
+
+# EDITABLE START
+
+# Change folder to be a foler with correct permissions
+
+mainDir = "/home/matthew/Desktop/a/"
+
+# EDITABLE END
+
+# Sets up directorys
+
+curTime = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+workingDir = os.path.join(mainDir, curTime)
+
+os.mkdir(workingDir)
+os.mkdir(os.path.join(workingDir,"Pages"))
+os.mkdir(os.path.join(workingDir,"Images"))
 
 CupsRas3 = namedtuple(
     # Documentation at https://www.cups.org/doc/spec-raster.html
@@ -24,8 +45,7 @@ CupsRas3 = namedtuple(
     'cupsString15 cupsString16 cupsMarkerType cupsRenderingIntent cupsPageSizeName'
 )
 
-
-def read_ras3(rdata):
+def readRas3(rdata):
     if not rdata:
         raise ValueError('No data received')
 
@@ -60,40 +80,37 @@ def read_ras3(rdata):
     return pages
 
 
-pages = read_ras3(sys.stdin.buffer.read())
+pages = readRas3(sys.stdin.buffer.read())
 
 for i, datatuple in enumerate(pages):
     (header, imgdata) = datatuple
 
     if header.cupsColorSpace != 0 or header.cupsNumColors != 1:
         raise ValueError('Invalid color space, only monocolor supported')
-    f = open("/home/matthew/Desktop/demofile.txt", "a")
-    f.write("Now the file has more content!")
-    f.close()
+    
+    npdata = np.frombuffer(imgdata, dtype=np.uint8)
+    npixels = npdata.reshape((header.cupsHeight, header.cupsWidth))
+    
+    im = Image.fromarray(npixels, 'L')
+    im = im.convert('1', dither=1)
+    im.save(os.path.join(workingDir,"Images","%d.png" % (i+1)))
+    npixels = np.array(im.getdata()).reshape((header.cupsWidth, header.cupsHeight))
+    
+    
+    
+    with open(os.path.join(workingDir,"Pages","%d.dm" % (i+1)), "w") as file:
+        pix = im.load()
+        imWidth, imHeight = im.size
+        for row in range(imHeight):
+            for col in range(imWidth):
+                file.write("%d " % (1 if pix[col, row] == 0 else 0))
+            file.write("\n")
 
-    # npdata = np.frombuffer(imgdata, dtype=np.uint8)
-    # npixels = npdata.reshape((header.cupsHeight, header.cupsWidth)).transpose()
-
-    # if np.any(np.logical_and(npixels > 10, npixels < 245)):
-    #     im = Image.fromarray(npixels, 'L')
-    #     im = im.convert('1', dither=1)
-    #     npixels = np.array(im.getdata()).reshape((header.cupsWidth, header.cupsHeight))
-
-    # sys.stdout.buffer.write(b'<CB>')
-    # for yoffset in range(0, npixels.shape[1], 8):
-    #     row_octet = np.zeros(npixels.shape[0], dtype=np.uint8)
-    #     for j in range(8):
-    #         row_blacks = (npixels[:, min(yoffset + j, npixels.shape[1] -1)] < 128).astype(np.uint8)
-    #         row_octet = np.bitwise_or(row_octet, np.left_shift(row_blacks, 7 - j))
-    #     if row_octet.any():
-    #         # FGL: <RCy,x>: Move to correct position
-    #         # FGL: <Gnn>: nn bytes of graphics are followinga
-    #         sys.stdout.buffer.write('<RC{},{}><G{}>'.format(yoffset, 0, row_octet.shape[0]).encode())
-    #         sys.stdout.buffer.write(row_octet.tostring())
-
-    # if header.CutMedia in (1, 2, 3) and i == len(pages) - 1:  # Cut after last ticket of file/job/set
-    #     sys.stdout.buffer.write(b'<p>')
-    # elif header.CutMedia == 4:  # Cut after page
-    #     sys.stdout.buffer.write(b'<p>')
-    # else:  # Do not cut
-    #     sys.stdout.buffer.write(b'<q>')
+with open(os.path.join(workingDir,curTime+".EV3P"), "w") as fileFinal:
+    files2Merge = glob.glob(os.path.join(workingDir,"Pages","*.dm"))
+    fileFinal.write(curTime+"\n")
+    fileFinal.write(str(len(files2Merge))+"\n")
+    for file in files2Merge:
+        with open(file, "r") as f2m:
+            dotMatrix = f2m.read()
+            fileFinal.write(dotMatrix+"\n")

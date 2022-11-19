@@ -7,14 +7,14 @@
   Version 1.0
   Attribute "NickName" "" "EV3 Printer 2022"
 
-  Filter "application/vnd.cups-raster 100 makeEV3File"
+  Filter "application/vnd.cups-raster 100 /usr/lib/cups/filter/EV3Filter/makeEV3File.py"
   *Resolution - 8 0 0 0 16dpi
   ColorModel Gray/Grayscale w chunky 0
 
   *MediaSize Letter
 
-  // VariablePaperSize Yes
-  // HWMargins 0.00 0.00 0.00 0.00
-  // MinSize 0.00 0.00
-  // MaxSize 0.00 0.00
+  VariablePaperSize Yes
+  HWMargins 0.00 0.00 0.00 0.00
+  MinSize 0.00 0.00
+  MaxSize 0.00 0.00
 }
