@@ -19,7 +19,7 @@ mainDir = "/home/matthew/Desktop/a/"
 
 # Sets up directorys
 
-curTime = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+curTime = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
 
 workingDir = os.path.join(mainDir, curTime)
 
