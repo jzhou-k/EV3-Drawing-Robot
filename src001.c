@@ -3,17 +3,30 @@ TFileHandle fin;
 const int SPOTS_PER_ROW = 136; // Number of possible dots in a row
 const int ROWS = 176; // Max number of rows to draw
 const float SIXTEENTH_INCH = 0.15875;
+const float INIT_MOVE = 5; //cm distance from color sensor to start pos
 void driveXAxis(float Dist);
 void paperScroller(float Dist);
 bool checkStart();
 int toNextX(int curX);
 void returnToXHome() ;
 void dotPen();
+bool correctPosition(float Dist);
+void promptUser();
 
 task main()
 {
 	SensorType[S2] = sensorEV3_Touch;
+	wait1Msec(50);
 	SensorType[S3] = sensorEV3_Touch;
+	wait1Msec(50);
+	SensorType[S1] = sensorEV3_Color;
+	wait1Msec(50);
+	SensorMode[S1] = modeEV3Color_Color;
+	wait1Msec(50);
+	nMotorEncoder[motorA] = 0;
+	nMotorEncoder[motorB] = 0;
+	nMotorEncoder[motorD] = 0;
+	promptUser();
 	returnToXHome();
 	//paperScroller(0.15875); // Scroll Paper: 1/16 inch
 	bool success = openReadPC(fin, "1.txt");
@@ -22,7 +35,10 @@ task main()
 		displayString(0, "File In not working");
 		wait1Msec(2000);
 	}
-
+	if(!correctPosition(INIT_MOVE))
+	{
+		return;
+	}
 	int curRow = 0;
 
 	while (curRow < ROWS)
@@ -88,14 +104,14 @@ void driveXAxis(float Dist)
 void paperScroller(float Dist)
 {
 	int initialEncoder = getMotorEncoder(motorD);
-	const float WHEEL_RADIUS = 2.8*(14/18); // May need to be updated
+	const float WHEEL_RADIUS = 2.8; // May need to be updated
 	const float CM_TO_DEG = 180/(PI*WHEEL_RADIUS);
 	const float GEAR_RATIO = 15;
 	float degreesToTravel = Dist*CM_TO_DEG;
 
 	motor[motorD] = -30;
 
-	while(nMotorEncoder(motorD) - initialEncoder < degreesToTravel*GEAR_RATIO)
+	while(abs(nMotorEncoder(motorD) - initialEncoder) < degreesToTravel*GEAR_RATIO)
 	{
 	}
 
@@ -153,4 +169,40 @@ void dotPen()
 	}
 
 	motor[motorC] = 0;
+}
+
+bool correctPosition(float Dist)
+{
+	motor[motorD] = -30;
+	time1[T4] = 0;
+	while(SensorValue[S1] != (int)colorWhite)
+	{
+		if(time1[T4] > 1000*6)
+		{
+			motor[motorD] = 0;
+			eraseDisplay();
+			displayString(5,"ERROR");
+			wait1Msec(10000);
+			return false;
+		}
+	}
+	motor[motorD] = 0;
+	wait1Msec(1000);
+	paperScroller(Dist);
+	return true;
+}
+void promptUser()
+{
+	eraseDisplay();
+  displayString(2,"PLACE PAPER ");
+  displayString(3,"RIGHT UNDER ");
+  displayString(4,"WHEEL");
+  displayString(5,"PRESS ENTER");
+  displayString(6,"ONCE IN CORRECT");
+  displayString(7,"POSITION");
+  while(!getButtonPress(ENTER_BUTTON))
+  {}
+	while(getButtonPress(ENTER_BUTTON))
+	{}
+	eraseDisplay();
 }
