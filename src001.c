@@ -33,7 +33,7 @@ task main()
 		returnToXHome();
 		resetPen();
 		string name[2] = {"1.txt", "2.txt"};
-		drawFile(name[0]);\
+		drawFile(name[0]);
 
 }
 
