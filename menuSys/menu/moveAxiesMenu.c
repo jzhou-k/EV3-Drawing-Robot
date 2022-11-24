@@ -26,12 +26,15 @@ bool moveAxiesMenuExecute(struct menuList &self)
 		{
 		case 0:
 			return false;
+			break;
 		case 1:
 			playTone(584, 50);
 			return true;
+			break;
 		case 2:
 			playTone(484, 50);
 			return true;
+			break;
 		}
 		return false;
 	}
