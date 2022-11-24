@@ -297,7 +297,7 @@ void drawFile(string fileName)
 	int curRow = 0;
 	int drawStartTime = nPgmTime; //using program start time to calculate time elapsed 
 
-	positionPen(); //lift the pen up by 3 cm 
+	positionPen(); 
 
 	while (curRow < ROWS && notExit)
 	{
@@ -308,15 +308,14 @@ void drawFile(string fileName)
 		}
 		checkStop();
 		int curCol = 0;
+		checkStop();
 		int timeElapsed = nPgmTime - drawStartTime;
 		checkStop();
-
 		if (checkStart())
 		{
 			checkStop();
 			dotPen();
 		}
-
 		checkStop();
 		while (curCol < SPOTS_PER_ROW && notExit)
 		{
@@ -327,12 +326,14 @@ void drawFile(string fileName)
 			}
 			checkStop();
 			int goTo = toNextX(curCol);
+			checkStop();
 			curCol += goTo;
 			checkStop();
 			if (goTo != -1 && notExit)
 			{
 				checkStop();
 				driveXAxis(SIXTEENTH_INCH * goTo);
+				checkStop();
 				dotPen();
 				checkStop();
 			}
@@ -383,9 +384,13 @@ void drawFile(string fileName)
 //check if file exits 
 bool checkFile(string fileName)
 {
+	checkStop();
 	bool foundFile = openReadPC(fin, fileName);
+	checkStop();
 	closeFilePC(fin);
+	checkStop();
 	return foundFile;
+	checkStop();
 }
 
 
@@ -408,8 +413,9 @@ bool correctPosition(float Dist)
 		checkStop();
 		if (time1[T4] > 1000 * 6 && notExit)
 		{
-			
+			checkStop();
 			motor[motorD] = 0;
+			checkStop();
 			eraseDisplay();
 			checkStop();
 			displayString(5, "ERROR");
