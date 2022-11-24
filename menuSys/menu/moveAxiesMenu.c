@@ -1,10 +1,12 @@
 #pragma once
 #include "menuStruct.c"
+
+// sets up menu struct for the move axies menu
 void moveAxiesMenuSetup(struct menuList &self)
 {
 	const int MOVE_AXIES_MENU_LENGTH = 4;
 	menuConstruct(self);
-	string indexNames[MOVE_AXIES_MENU_LENGTH] = {"Back", "Move X axis", "Move Y axis", "Move Z axis"}; //,"d","e","f","g","h","i","j","k","l","m","n","o","p"
+	string indexNames[MOVE_AXIES_MENU_LENGTH] = {"Back", "Move X axis", "Move Y axis", "Move Z axis"};
 	for (int name = 0; name < MOVE_AXIES_MENU_LENGTH; name++)
 	{
 		self.indexNames[name] = indexNames[name];
@@ -12,6 +14,7 @@ void moveAxiesMenuSetup(struct menuList &self)
 	self.lastUpdate = nPgmTime;
 }
 
+// tells the menu what function to execute depending on index position in menu
 bool moveAxiesMenuExecute(struct menuList &self)
 {
 	if (getButtonPress(ENTER_BUTTON))

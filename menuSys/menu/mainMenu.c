@@ -2,11 +2,13 @@
 #include "menuStruct.c"
 #include "moveAxiesMenu.c"
 #include "filePickerMenu.c"
+
+// sets up menu struct for the main menu
 void mainMenuSetup(struct menuList &self)
 {
 	const int MAIN_MENU_LENGTH = 3;
 	menuConstruct(self);
-	string indexNames[MAIN_MENU_LENGTH] = {"Run file", "Move axies", "Exit"}; //,"d","e","f","g","h","i","j","k","l","m","n","o","p"
+	string indexNames[MAIN_MENU_LENGTH] = {"Run file", "Move axies", "Exit"};
 	for (int name = 0; name < MAIN_MENU_LENGTH; name++)
 	{
 		self.indexNames[name] = indexNames[name];
@@ -18,11 +20,12 @@ void mainMenuSetup(struct menuList &self)
 	ROBOTC MANIFESTO
 	There are literally no function pointers in this language
 	Why
-	Also can't use swtich statments because when I tried that
-	the robotC ide crashed from the text idk anymore
-	This is the reasion the function below exists
+	Also can't use swtich statments with hash values of string 
+	because when I tried that and the robotC ide crashed from 
+	the text idk anymore
+	This is the reasion the function below exists as is
 */
-
+// tells the menu what function to execute depending on index position in menu
 int mainMenuExecute(struct menuList &self)
 {
 	if (getButtonPress(ENTER_BUTTON))

@@ -1,7 +1,8 @@
 #pragma once
 const int MAX_MENU_LENGTH = 16;
 const int MAX_DISPLAY_HEIGHT = 8;
-const int WAIT_TIME_AFTER_MENU_UPDATE = 500;
+const int WAIT_TIME_AFTER_MENU_UPDATE = 500; // MS
+
 struct menuList
 {
 	int topPos;
@@ -43,6 +44,7 @@ void displayMenu(const struct menuList &self)
 	}
 }
 
+// checks if you want the menu pointer  to move up or down and then scrolls menu down when needed
 bool displayPointerUpdate(struct menuList &self)
 {
 	if (nPgmTime - self.lastUpdate > WAIT_TIME_AFTER_MENU_UPDATE)

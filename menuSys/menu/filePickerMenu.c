@@ -2,6 +2,7 @@
 #include "menuStruct.c"
 #include "../lib/EV3_FileIO.c"
 
+// sets up menu struct for the file picker menu
 void filePickerMenuSetup(struct menuList &self)
 {
 	const int FILE_PICKER_MENU_LENGTH = 1;
@@ -14,6 +15,7 @@ void filePickerMenuSetup(struct menuList &self)
 	self.lastUpdate = nPgmTime;
 }
 
+// tells the menu what function to execute depending on index position in menu
 int filePickerMenuExecute(struct menuList &self)
 {
 	if (getButtonPress(ENTER_BUTTON))
@@ -31,6 +33,8 @@ int filePickerMenuExecute(struct menuList &self)
 		case 2:
 			playTone(484, 50);
 			return 2;
+		default:
+			return 3;
 		}
 	}
 	return -1;
@@ -45,7 +49,8 @@ bool checkFile(string fileName)
 	closeFilePC(fin);
 	return foundFile;
 }
-// string fileName;
+
+// changes menu structs pointer update behavior such that it works with infinite amount of files on EV3 if files are labeled from 0.txt to n.txt
 void fileMenuIntegrator(struct menuList &self, int &currentMinFile, bool init = false)
 {
 	string currentMaxFile;
@@ -84,15 +89,12 @@ void fileMenuIntegrator(struct menuList &self, int &currentMinFile, bool init = 
 			stringFormat(fileName, "%d.txt", numFiles);
 			string tempFileName;
 			stringFormat(tempFileName, "%d.txt", numFiles);
-			// displayString(0,"%s %d",tempFileName, numFiles-currentMinFile+1);
-			// wait1Msec(2000);
 			self.indexNames[numFiles - currentMinFile + 1] = tempFileName;
 			updateFiles = false;
 		}
 	}
 }
 
-// int currentMinFile = 0;
 void filePickerMenuRun()
 {
 	bool exitProgram = false;
