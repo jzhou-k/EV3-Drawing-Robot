@@ -1,5 +1,9 @@
 #include "EV3_FileIO.c";
 TFileHandle fin;
+int timeElapsed = 0;
+int drawStartTime = 0;
+const float MS_TO_S = 1/1000.0;
+const int timerInterval = 250;
 const int SPOTS_PER_ROW = 136; // Number of possible dots in a row
 const int ROWS = 176; // Max number of rows to draw
 const float SIXTEENTH_INCH = 0.15875;
@@ -17,12 +21,14 @@ void promptUser();
 bool checkFile(string fileName);
 void sensorMotorInit();
 void checkStop();
+void resetPen();
 
 task main()
 {
 		sensorMotorInit();
 		promptUser();
 		returnToXHome();
+		resetPen();
 		string name[2] = {"1.txt", "2.txt"};
 		drawFile(name[0]);\
 
@@ -58,6 +64,7 @@ void driveXAxis(float Dist)
 	motor[motorA] = 30;
 	while(nMotorEncoder(motorA) - initialEncoder < degreesToTravel*GEAR_RATIO && notExit)
 	{
+		timeElapsed = nPgmTime - drawStartTime;
 		if(getButtonPress(ENTER_BUTTON))
 		{
 			notExit = false;
@@ -70,6 +77,7 @@ void driveXAxis(float Dist)
 			encoderLastCheck = getMotorEncoder(motorA);
 			if(encoderLastCheck - initialEncoder < 60 && notExit)
 			{
+				eraseDisplay();
 				displayBigTextLine(0, "X-Axis jam. Exiting...");
 				wait1Msec(10);
 				playSound(soundException);
@@ -77,6 +85,14 @@ void driveXAxis(float Dist)
 				notExit = false;
 				break;
 			}
+		}
+
+		if (time1[T1] > timerInterval && notExit)
+		{
+			eraseDisplay();
+			displayBigTextLine(0, "Time: %0.2f s", timeElapsed/MS_TO_S);
+			wait1Msec(10);
+			time1[T1] = 0;
 		}
 	}
 	motor[motorA] = 0;
@@ -168,6 +184,7 @@ void dotPen()
 
 	while(!SensorValue[S3] && notExit)
 	{
+		timeElapsed = nPgmTime - drawStartTime;
 		if(getButtonPress(ENTER_BUTTON))
 		{
 			notExit = false;
@@ -175,6 +192,7 @@ void dotPen()
 		}
 		if (time1[T4] > 5000)
 		{
+			eraseDisplay();
 			displayBigTextLine(0, "Pen dislodged. Exiting...");
 			playSound(soundException);
 			wait1Msec(5000);
@@ -182,20 +200,32 @@ void dotPen()
 			break;
 			//add exit draw function
 		}
+		if (time1[T1] > timerInterval && notExit)
+		{
+			eraseDisplay();
+			displayBigTextLine(0, "Time: %0.2f s", timeElapsed*MS_TO_S);
+			wait1Msec(10);
+			time1[T1] = 0;
+		}
 	}
-	checkStop();
 	motor[motorC] = 0;
-	checkStop();
 	motor[motorC] = -40;
 	checkStop();
 	while(nMotorEncoder(motorC) > 0)
 	{
+		timeElapsed = nPgmTime - drawStartTime;
 		if(getButtonPress(ENTER_BUTTON))
 		{
 			notExit = false;
 			break;
 		}
-		checkStop();
+		if (time1[T1] > timerInterval && notExit)
+		{
+			eraseDisplay();
+			displayBigTextLine(0, "Time: %0.2f s", timeElapsed*MS_TO_S);
+			wait1Msec(10);
+			time1[T1] = 0;
+		}
 	}
 	checkStop();
 	motor[motorC] = 0;
@@ -223,8 +253,7 @@ void drawFile(string fileName)
 	checkStop();
 	int curRow = 0;
 	checkStop();
-	int drawStartTime = nPgmTime;
-	checkStop();
+	drawStartTime = nPgmTime;
 	while (curRow < ROWS && notExit)
 	{
 		if(getButtonPress(ENTER_BUTTON))
@@ -232,24 +261,20 @@ void drawFile(string fileName)
 			notExit = false;
 			break;
 		}
-		checkStop();
 		int curCol = 0;
-		checkStop();
-		int timeElapsed = nPgmTime - drawStartTime;
-		checkStop();
 		if(checkStart())
 		{
-			checkStop();
 			dotPen();
 		}
-		checkStop();
+		timeElapsed = nPgmTime - drawStartTime;
 		while (curCol < SPOTS_PER_ROW && notExit)
 		{
+			timeElapsed = nPgmTime - drawStartTime;
 			if(getButtonPress(ENTER_BUTTON))
-		{
+			{
 			notExit = false;
 			break;
-		}
+			}
 			checkStop();
 			int goTo = toNextX(curCol);
 			checkStop();
@@ -266,16 +291,18 @@ void drawFile(string fileName)
 				curCol = SPOTS_PER_ROW;
 			}
 
-			if (time1[T1] > 500 && notExit)
+			if (time1[T1] > timerInterval && notExit)
 			{
-				displayBigTextLine(0, "Elapsed: %0.2f s", timeElapsed/1000);
+				eraseDisplay();
+				displayBigTextLine(0, "Time: %0.2f s", timeElapsed*MS_TO_S);
 				wait1Msec(10);
 				time1[T1] = 0;
 			}
 		}
-		if (time1[T1] > 500 && notExit)
+		if (time1[T1] > timerInterval && notExit)
 		{
-			displayBigTextLine(0, "Elapsed: %0.2f s", timeElapsed/1000);
+			eraseDisplay();
+			displayBigTextLine(0, "Time: %0.2f s", timeElapsed*MS_TO_S);
 			wait1Msec(10);
 			time1[T1] = 0;
 		}
@@ -376,4 +403,28 @@ void checkStop()
 	{
 		notExit = false;
 	}
+}
+
+void resetPen()
+{
+	int lastEncoder = getMotorEncoder(motorC);
+	bool penAtTop = false;
+	time1[T4] = 0;
+	motor[motorC] = -40;
+	while(time1[T4] < 1500)
+	{
+	}
+	/*while(!penAtTop)
+	{
+		if(time1[T4] > 100)
+		{
+			time1[T4] = 0;
+			if(lastEncoder == nMotorEncoder(motorC))
+			{
+				penAtTop = true;
+			}
+			lastEncoder = getMotorEncoder(motorC);
+		}
+	}*/
+	motor[motorC] = 0;
 }
