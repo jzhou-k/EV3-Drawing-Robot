@@ -1,4 +1,7 @@
 #include "EV3_FileIO.c";
+#include "menuSys/ports.h";
+
+
 TFileHandle fin;
 int timeElapsed = 0;
 int drawStartTime = 0;
@@ -382,13 +385,14 @@ void promptUser()
 	eraseDisplay();
 	checkStop();
 }
+
 void sensorMotorInit()
 {
-	SensorType[S2] = sensorEV3_Touch; //x axis touch
+	SensorType[xAxisLim] = sensorEV3_Touch; //x axis touch
 	wait1Msec(50);
-	SensorType[S3] = sensorEV3_Touch; //pen touch
+	SensorType[zAxisLim] = sensorEV3_Touch; //pen touch
 	wait1Msec(50);
-	SensorType[S1] = sensorEV3_Color;
+	SensorType[paperSensor] = sensorEV3_Color;
 	wait1Msec(50);
 	SensorMode[S1] = modeEV3Color_Color;
 	wait1Msec(50);
