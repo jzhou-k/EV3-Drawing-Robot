@@ -20,8 +20,8 @@ void mainMenuSetup(struct menuList &self)
 	ROBOTC MANIFESTO
 	There are literally no function pointers in this language
 	Why
-	Also can't use swtich statments with hash values of string 
-	because when I tried that and the robotC ide crashed from 
+	Also can't use swtich statments with hash values of string
+	because when I tried that and the robotC ide crashed from
 	the text idk anymore
 	This is the reasion the function below exists as is
 */
@@ -38,11 +38,14 @@ int mainMenuExecute(struct menuList &self)
 		case 0:
 			filePickerMenuRun();
 			return 2;
+			break;
 		case 1:
 			moveAxiesMenuRun();
 			return 2;
+			break;
 		case 2:
 			return 1;
+			break;
 		}
 	}
 	return -1;
@@ -62,8 +65,10 @@ void mainMenuRun()
 		{
 		case 1:
 			exitProgram = true;
+			break;
 		case 2:
 			displayUpdate = true;
+			break;
 		}
 		if (displayUpdate)
 		{

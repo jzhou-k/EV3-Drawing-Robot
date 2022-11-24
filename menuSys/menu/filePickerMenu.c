@@ -1,6 +1,7 @@
 #pragma once
 #include "menuStruct.c"
 #include "../lib/EV3_FileIO.c"
+#include "../draw/test.c"
 
 // sets up menu struct for the file picker menu
 void filePickerMenuSetup(struct menuList &self)
@@ -27,14 +28,10 @@ int filePickerMenuExecute(struct menuList &self)
 		{
 		case 0:
 			return 1;
-		case 1:
-			playTone(584, 50);
-			return 2;
-		case 2:
-			playTone(484, 50);
-			return 2;
+			break;
 		default:
 			return 3;
+			break;
 		}
 	}
 	return -1;
@@ -109,10 +106,18 @@ void filePickerMenuRun()
 		displayUpdate = displayPointerUpdate(filePickerMenu);
 		switch (filePickerMenuExecute(filePickerMenu))
 		{
-		case 1:
-			exitProgram = true;
-		case 2:
-			displayUpdate = true;
+			case 1:
+				exitProgram = true;
+				break;
+			case 2:
+				displayUpdate = true;
+				break;
+			case 3:
+				string fileName = "";
+				stringFormat(fileName, "%d.txt", currentMinFile+filePickerMenu.index-1);
+				EV3draw(fileName);
+				displayUpdate = true;
+				break;
 		}
 		if (displayUpdate)
 		{
