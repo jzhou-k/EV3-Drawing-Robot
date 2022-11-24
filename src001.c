@@ -21,15 +21,11 @@ void checkStop();
 task main()
 {
 		sensorMotorInit();
-		checkStop();
 		promptUser();
-		checkStop();
 		returnToXHome();
-		checkStop();
 		string name[2] = {"1.txt", "2.txt"};
-		checkStop();
-		drawFile(name[0]);
-		checkStop();
+		drawFile(name[0]);\
+
 }
 
 void returnToXHome()
@@ -272,14 +268,14 @@ void drawFile(string fileName)
 
 			if (time1[T1] > 500 && notExit)
 			{
-				displayBigTextLine(0, "Elapsed: %0.2f s", timeElapsed);
+				displayBigTextLine(0, "Elapsed: %0.2f s", timeElapsed/1000);
 				wait1Msec(10);
 				time1[T1] = 0;
 			}
 		}
 		if (time1[T1] > 500 && notExit)
 		{
-			displayBigTextLine(0, "Elapsed: %0.2f s", timeElapsed);
+			displayBigTextLine(0, "Elapsed: %0.2f s", timeElapsed/1000);
 			wait1Msec(10);
 			time1[T1] = 0;
 		}
