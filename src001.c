@@ -5,8 +5,13 @@ const int ROWS = 176;		   // Max number of rows to draw
 const float SIXTEENTH_INCH = 0.15875;
 const float INIT_MOVE = 5.0; // cm distance from color sensor
 
+<<<<<<< HEAD
 // function prototypes
 bool notExit = true;
+=======
+
+//function prototypes  
+>>>>>>> parent of 905b4dc (Merge branch 'main' of https://github.com/jzhou-k/EV3-Drawing-Robot)
 void driveXAxis(float Dist);
 void paperScroller(float Dist);
 bool checkStart();
@@ -18,6 +23,7 @@ bool correctPosition(float Dist);
 void promptUser();
 bool checkFile(string fileName);
 void sensorMotorInit();
+<<<<<<< HEAD
 void checkStop();
 void positionPen();
 
@@ -69,10 +75,21 @@ void positionPen()
 	}
 
 		
+=======
+
+task main()
+{
+	sensorMotorInit();
+	promptUser();
+	returnToXHome();
+	string name[2] = {"1.txt", "2.txt"};
+	drawFile(name[0]);
+>>>>>>> parent of 905b4dc (Merge branch 'main' of https://github.com/jzhou-k/EV3-Drawing-Robot)
 }
 
 void returnToXHome()
 {
+<<<<<<< HEAD
 	while (SensorValue[S2] != 1 && notExit)
 	{
 		if (getButtonPress(ENTER_BUTTON))
@@ -82,11 +99,53 @@ void returnToXHome()
 		}
 		motor[motorA] = -50;
 		checkStop();
+=======
+	while(SensorValue[S2] != 1)
+	{
+	    motor[motorA] = -50;
 	}
 	motor[motorA] = 0;
+	nMotorEncoder[motorA] = 0;
+}
+//5:3 --> 25:9 --> For every 25 deg motor encoder, 9 deg gear
+// 38 mm diameter
+void driveXAxis(float Dist)
+{
+	time1[T4] = 0;
+	int initialEncoder = getMotorEncoder(motorA);
+	int encoderLastCheck = initialEncoder;
+	const float GEAR_RADIUS = 1.875; // 1.
+	const float CM_TO_DEG = 180/(PI*GEAR_RADIUS);
+	const float GEAR_RATIO = 25/1.0;
+	float degreesToTravel = Dist*CM_TO_DEG;
+
+	motor[motorA] = 30;
+
+	//keep powering motor until it gets to the distance desired 
+	while(nMotorEncoder(motorA) - initialEncoder < degreesToTravel*GEAR_RATIO)
+	{	
+		//Error checking code 
+		if (time1[T4] > 1500)
+		{
+			time1[T4] = 0;
+			//if encoder has not moved, plays error sound and exit sound 
+			if(encoderLastCheck - initialEncoder < 360)
+			{
+				displayBigTextLine(0, "X-Axis jam. Exiting...");
+				playSound(soundException);
+				wait1Msec(5000);
+			}
+		}
+>>>>>>> parent of 905b4dc (Merge branch 'main' of https://github.com/jzhou-k/EV3-Drawing-Robot)
+	}
+
+	motor[motorA] = 0;
+<<<<<<< HEAD
 	checkStop();
 	nMotorEncoder[motorA] = 0;
 	checkStop();
+=======
+>>>>>>> parent of 905b4dc (Merge branch 'main' of https://github.com/jzhou-k/EV3-Drawing-Robot)
 }
 // 5:3 --> 25:9 --> For every 25 deg motor encoder, 9 deg gear
 //  38 mm diameter
@@ -151,11 +210,11 @@ void driveXAxis(float Dist)
 // Rolls paper by distance passed in parameter.
 void paperScroller(float Dist)
 {
-	checkStop();
 	int initialEncoder = getMotorEncoder(motorD);
 	const float WHEEL_RADIUS = 2.8; // May need to be updated
 	const float CM_TO_DEG = 180 / (PI * WHEEL_RADIUS);
 	const float GEAR_RATIO = 15;
+<<<<<<< HEAD
 	float degreesToTravel = Dist * CM_TO_DEG;
 	checkStop();
 	motor[motorD] = -30;
@@ -167,40 +226,61 @@ void paperScroller(float Dist)
 			notExit = false;
 			break;
 		}
+=======
+	float degreesToTravel = Dist*CM_TO_DEG;
+
+	motor[motorD] = -30;
+	
+	while(abs(nMotorEncoder(motorD) - initialEncoder) < degreesToTravel*GEAR_RATIO)
+	{
+>>>>>>> parent of 905b4dc (Merge branch 'main' of https://github.com/jzhou-k/EV3-Drawing-Robot)
 	}
-	checkStop();
+
 	motor[motorD] = 0;
-	checkStop();
 }
 
 // check if the beginning of the file should be dotted
 bool checkStart()
 {
+<<<<<<< HEAD
 	checkStop();
 	int dotPos = 0;
 	readIntPC(fin, dotPos);
 
 	checkStop();
 	if (dotPos == 1)
+=======
+	readIntPC(fin, 0);
+	if(dotPos == 1)
+>>>>>>> parent of 905b4dc (Merge branch 'main' of https://github.com/jzhou-k/EV3-Drawing-Robot)
 	{
-		checkStop();
 		return true;
 	}
+<<<<<<< HEAD
 
+=======
+		
+>>>>>>> parent of 905b4dc (Merge branch 'main' of https://github.com/jzhou-k/EV3-Drawing-Robot)
 	return false;
-	checkStop();
+
 }
 
 // returns the unit from current position to the next dotting position
 int toNextX(int curX)
 {
+<<<<<<< HEAD
 	checkStop();
 	int evalValue = 0;	  // Value read from text file; 0 or 1
 	int evalX = curX + 1; // Current x-position being evaluated
 	checkStop();
+=======
+	int evalValue = 0; // Value read from text file; 0 or 1
+	int evalX = curX+1;  // Current x-position being evaluated
+>>>>>>> parent of 905b4dc (Merge branch 'main' of https://github.com/jzhou-k/EV3-Drawing-Robot)
 
-	while (evalX < SPOTS_PER_ROW && notExit)
+	while (evalX < SPOTS_PER_ROW)
 	{
+<<<<<<< HEAD
 		if (getButtonPress(ENTER_BUTTON))
 		{
 			notExit = false;
@@ -208,31 +288,38 @@ int toNextX(int curX)
 		}
 
 		// keep reading file until it finds the next dotting position
+=======
+>>>>>>> parent of 905b4dc (Merge branch 'main' of https://github.com/jzhou-k/EV3-Drawing-Robot)
 		readIntPC(fin, evalValue);
 		if (evalValue == 1)
 		{
-			checkStop();
 			return (evalX - curX);
+	  	}
+	  	else
+	  	{
+	  		evalX++;
 		}
+<<<<<<< HEAD
 		else
 		{
 			checkStop();
 			evalX++;
 		}
 		checkStop();
+=======
+>>>>>>> parent of 905b4dc (Merge branch 'main' of https://github.com/jzhou-k/EV3-Drawing-Robot)
 	}
-	checkStop();
+
 	return -1; // Signal no dot found in remaining row
 }
 
 // Dots pen on page
 void dotPen()
 {
-	checkStop();
 	time1[T4] = 0;
 	motor[motorC] = 40;
-	checkStop();
 
+<<<<<<< HEAD
 	// while touch sensor haven't touched the paper, keep moving pen down
 	while (!SensorValue[S3] && notExit)
 	{
@@ -244,18 +331,25 @@ void dotPen()
 		}
 
 		// error checking, if this loop is excuting for more than 5 secs, assume pen is stuck and display error message
+=======
+	while(!SensorValue[S3])
+	{
+>>>>>>> parent of 905b4dc (Merge branch 'main' of https://github.com/jzhou-k/EV3-Drawing-Robot)
 		if (time1[T4] > 5000)
 		{
-			checkStop();
 			displayBigTextLine(0, "Pen dislodged. Exiting...");
 			playSound(soundException);
-			checkStop();
 			wait1Msec(5000);
+<<<<<<< HEAD
 			checkStop();
+=======
+			return; // Later add exit draw function
+>>>>>>> parent of 905b4dc (Merge branch 'main' of https://github.com/jzhou-k/EV3-Drawing-Robot)
 		}
 	}
 
 	motor[motorC] = 0;
+<<<<<<< HEAD
 	motor[motorC] = -40;
 	checkStop();
 
@@ -268,30 +362,35 @@ void dotPen()
 			break;
 		}
 		checkStop();
+=======
+
+	motor[motorC] = -40;
+
+	while(nMotorEncoder(motorC) > 0)
+	{
+>>>>>>> parent of 905b4dc (Merge branch 'main' of https://github.com/jzhou-k/EV3-Drawing-Robot)
 	}
 
 	motor[motorC] = 0;
-	checkStop();
 }
 
 void drawFile(string fileName)
 {
-	checkStop();
 	bool success = openReadPC(fin, fileName);
-	checkStop();
-	if (!success && notExit)
+	if (!success)
 	{
-		checkStop();
 		displayString(0, "File In not working");
-		checkStop();
 		wait1Msec(2000);
-		checkStop();
 	}
+<<<<<<< HEAD
 	if (!correctPosition(INIT_MOVE) && notExit)
+=======
+	if(!correctPosition(INIT_MOVE))
+>>>>>>> parent of 905b4dc (Merge branch 'main' of https://github.com/jzhou-k/EV3-Drawing-Robot)
 	{
-		checkStop();
 		return;
 	}
+<<<<<<< HEAD
 	checkStop();
 	
 	int curRow = 0;
@@ -307,90 +406,93 @@ void drawFile(string fileName)
 			break;
 		}
 		checkStop();
+=======
+
+	int curRow = 0;
+
+	int drawStartTime = nPgmTime;
+
+	while (curRow < ROWS)
+	{
+>>>>>>> parent of 905b4dc (Merge branch 'main' of https://github.com/jzhou-k/EV3-Drawing-Robot)
 		int curCol = 0;
-		checkStop();
 		int timeElapsed = nPgmTime - drawStartTime;
+<<<<<<< HEAD
 		checkStop();
 		if (checkStart())
+=======
+		if(checkStart())
+>>>>>>> parent of 905b4dc (Merge branch 'main' of https://github.com/jzhou-k/EV3-Drawing-Robot)
 		{
-			checkStop();
 			dotPen();
 		}
-		checkStop();
-		while (curCol < SPOTS_PER_ROW && notExit)
+		while (curCol < SPOTS_PER_ROW)
 		{
+<<<<<<< HEAD
 			if (getButtonPress(ENTER_BUTTON))
 			{
 				notExit = false;
 				break;
 			}
 			checkStop();
+=======
+>>>>>>> parent of 905b4dc (Merge branch 'main' of https://github.com/jzhou-k/EV3-Drawing-Robot)
 			int goTo = toNextX(curCol);
-			checkStop();
 			curCol += goTo;
-			checkStop();
-			if (goTo != -1 && notExit)
+			if (goTo != -1)
 			{
+<<<<<<< HEAD
 				checkStop();
 				driveXAxis(SIXTEENTH_INCH * goTo);
 				checkStop();
+=======
+				driveXAxis(SIXTEENTH_INCH*goTo);
+>>>>>>> parent of 905b4dc (Merge branch 'main' of https://github.com/jzhou-k/EV3-Drawing-Robot)
 				dotPen();
-				checkStop();
 			}
 			else
 			{
-				checkStop();
 				curCol = SPOTS_PER_ROW;
 			}
 
-			if (time1[T1] > 500 && notExit)
+			if (time1[T1] > 500)
 			{
-				checkStop();
+				wait1Msec(5);
 				displayBigTextLine(0, "Time Elapsed: %0.2f s", timeElapsed);
-				checkStop();
-				wait10Msec(1);
-				checkStop();
 				time1[T1] = 0;
-				checkStop();
 			}
 		}
-		if (time1[T1] > 500 && notExit)
+		if (time1[T1] > 500)
 		{
-			checkStop();
+			wait1Msec(5);
 			displayBigTextLine(0, "Time Elapsed: %0.2f s", timeElapsed);
-			checkStop();
-			wait10Msec(1);
-			checkStop();
 			time1[T1] = 0;
-			checkStop();
 		}
 		// reset X Pos
+<<<<<<< HEAD
 		checkStop();
 		returnToXHome();
 		checkStop();
+=======
+    returnToXHome();
+
+>>>>>>> parent of 905b4dc (Merge branch 'main' of https://github.com/jzhou-k/EV3-Drawing-Robot)
 		// Move down a row
-		checkStop();
 		paperScroller(SIXTEENTH_INCH);
-		checkStop();
 		curRow++;
-		checkStop();
 	}
-	checkStop();
+
 	closeFilePC(fin);
-	checkStop();
-	notExit = false;
 }
 
 //check if file exits 
 bool checkFile(string fileName)
 {
-	checkStop();
 	bool foundFile = openReadPC(fin, fileName);
-	checkStop();
+
 	closeFilePC(fin);
-	checkStop();
+
 	return foundFile;
-	checkStop();
 }
 
 
@@ -398,9 +500,9 @@ bool checkFile(string fileName)
 //
 bool correctPosition(float Dist)
 {
-	checkStop();
 	motor[motorD] = -30;
 	time1[T4] = 0;
+<<<<<<< HEAD
 	checkStop();
 
 	while (SensorValue[S1] != (int)colorWhite && notExit)
@@ -414,23 +516,27 @@ bool correctPosition(float Dist)
 		if (time1[T4] > 1000 * 6 && notExit)
 		{
 			checkStop();
+=======
+	while(SensorValue[S1] != (int)colorWhite)
+	{
+		if(time1[T4] > 1000*6)
+		{
+>>>>>>> parent of 905b4dc (Merge branch 'main' of https://github.com/jzhou-k/EV3-Drawing-Robot)
 			motor[motorD] = 0;
-			checkStop();
 			eraseDisplay();
+<<<<<<< HEAD
 			checkStop();
 			displayString(5, "ERROR");
 			checkStop();
+=======
+			displayString(5,"ERROR");
+>>>>>>> parent of 905b4dc (Merge branch 'main' of https://github.com/jzhou-k/EV3-Drawing-Robot)
 			wait1Msec(10000);
-			checkStop();
 			return false;
-			checkStop();
 		}
 	}
-	checkStop();
 	motor[motorD] = 0;
-	checkStop();
 	wait1Msec(1000);
-	checkStop();
 	paperScroller(Dist);
 	return true;
 }
@@ -440,6 +546,7 @@ bool correctPosition(float Dist)
 //the drawing function 
 void promptUser()
 {
+<<<<<<< HEAD
 	checkStop();
 	eraseDisplay();
 	displayString(2, "PLACE PAPER ");
@@ -458,11 +565,24 @@ void promptUser()
 		checkStop();
 	}
 	checkStop();
+=======
+>>>>>>> parent of 905b4dc (Merge branch 'main' of https://github.com/jzhou-k/EV3-Drawing-Robot)
 	eraseDisplay();
-	checkStop();
+  displayString(2,"PLACE PAPER ");
+  displayString(3,"RIGHT UNDER ");
+  displayString(4,"WHEEL");
+  displayString(5,"PRESS ENTER");
+  displayString(6,"ONCE IN CORRECT");
+  displayString(7,"POSITION");
+  while(!getButtonPress(ENTER_BUTTON))
+  {}
+	while(getButtonPress(ENTER_BUTTON))
+	{}
+	eraseDisplay();
 }
 
 
+<<<<<<< HEAD
 //check if user presses the enter button, then exit the program 
 void checkStop()
 {
@@ -470,4 +590,21 @@ void checkStop()
 	{
 		notExit = false;
 	}
+=======
+
+//initialize all 
+void sensorMotorInit()
+{
+	SensorType[S2] = sensorEV3_Touch;
+	wait1Msec(50);
+	SensorType[S3] = sensorEV3_Touch;
+	wait1Msec(50);
+	SensorType[S1] = sensorEV3_Color;
+	wait1Msec(50);
+	SensorMode[S1] = modeEV3Color_Color;
+	wait1Msec(50);
+	nMotorEncoder[motorA] = 0;
+	nMotorEncoder[motorB] = 0;
+	nMotorEncoder[motorD] = 0;
+>>>>>>> parent of 905b4dc (Merge branch 'main' of https://github.com/jzhou-k/EV3-Drawing-Robot)
 }
