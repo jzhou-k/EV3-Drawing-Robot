@@ -53,21 +53,13 @@ void returnToXHome()
 void driveXAxis(float Dist)
 {
 	time1[T4] = 0;
-	checkStop();
 	int initialEncoder = getMotorEncoder(motorA);
-	checkStop();
 	int encoderLastCheck = initialEncoder;
-	checkStop();
-	const float GEAR_RADIUS = 1.875; // 1.
-	checkStop();
+	const float GEAR_RADIUS = 1.875;
 	const float CM_TO_DEG = 180/(PI*GEAR_RADIUS);
-	checkStop();
 	const float GEAR_RATIO = 25/1.0;
-	checkStop();
 	float degreesToTravel = Dist*CM_TO_DEG;
-	checkStop();
 	motor[motorA] = 30;
-	checkStop();
 	while(nMotorEncoder(motorA) - initialEncoder < degreesToTravel*GEAR_RATIO && notExit)
 	{
 		if(getButtonPress(ENTER_BUTTON))
@@ -83,11 +75,11 @@ void driveXAxis(float Dist)
 			if(encoderLastCheck - initialEncoder < 60 && notExit)
 			{
 				displayBigTextLine(0, "X-Axis jam. Exiting...");
-				checkStop();
+				wait1Msec(10);
 				playSound(soundException);
-				checkStop();
-				//wait1Msec(5000);
-				checkStop();
+				wait1Msec(5000);
+				notExit = false;
+				break;
 			}
 		}
 	}
@@ -187,14 +179,12 @@ void dotPen()
 		}
 		if (time1[T4] > 5000)
 		{
-			checkStop();
 			displayBigTextLine(0, "Pen dislodged. Exiting...");
-			checkStop();
 			playSound(soundException);
-			checkStop();
 			wait1Msec(5000);
-			checkStop();
-			return; // Later add exit draw function
+			notExit = false;
+			break;
+			//add exit draw function
 		}
 	}
 	checkStop();
@@ -273,72 +263,47 @@ void drawFile(string fileName)
 			{
 				checkStop();
 				driveXAxis(SIXTEENTH_INCH*goTo);
-				checkStop();
 				dotPen();
-				checkStop();
 			}
 			else
 			{
-				checkStop();
 				curCol = SPOTS_PER_ROW;
 			}
 
 			if (time1[T1] > 500 && notExit)
 			{
-				checkStop();
 				displayBigTextLine(0, "Elapsed: %0.2f s", timeElapsed);
-				checkStop();
 				wait1Msec(10);
-				checkStop();
 				time1[T1] = 0;
-				checkStop();
 			}
 		}
 		if (time1[T1] > 500 && notExit)
 		{
-			checkStop();
 			displayBigTextLine(0, "Elapsed: %0.2f s", timeElapsed);
-			checkStop();
 			wait1Msec(10);
-			checkStop();
 			time1[T1] = 0;
-			checkStop();
 		}
 		// reset X Pos
-		checkStop();
-    	returnToXHome();
-		checkStop();
+    returnToXHome();
 		// Move down a row
-		checkStop();
 		paperScroller(SIXTEENTH_INCH);
-		checkStop();
 		curRow++;
-		checkStop();
 	}
-	checkStop();
 	closeFilePC(fin);
-	checkStop();
 	notExit = false;
 }
 
 bool checkFile(string fileName)
 {
-	checkStop();
 	bool foundFile = openReadPC(fin, fileName);
-	checkStop();
 	closeFilePC(fin);
-	checkStop();
 	return foundFile;
-	checkStop();
 }
 
 bool correctPosition(float Dist)
 {
-	checkStop();
 	motor[motorD] = -30;
-	checkStop();
 	time1[T4] = 0;
-	checkStop();
 	while(SensorValue[S1] != (int)colorWhite && notExit)
 	{
 		if(getButtonPress(ENTER_BUTTON))
