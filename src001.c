@@ -3,74 +3,26 @@ TFileHandle fin;
 const int SPOTS_PER_ROW = 136; // Number of possible dots in a row
 const int ROWS = 176; // Max number of rows to draw
 const float SIXTEENTH_INCH = 0.15875;
-const float INIT_MOVE = 5; //cm distance from color sensor to start pos
+const float INIT_MOVE = 5.0; // cm distance from color sensor
 void driveXAxis(float Dist);
 void paperScroller(float Dist);
 bool checkStart();
 int toNextX(int curX);
+void drawFile(string fileName);
 void returnToXHome() ;
 void dotPen();
 bool correctPosition(float Dist);
 void promptUser();
+bool checkFile(string fileName);
+void sensorMotorInit();
 
 task main()
 {
-	SensorType[S2] = sensorEV3_Touch;
-	wait1Msec(50);
-	SensorType[S3] = sensorEV3_Touch;
-	wait1Msec(50);
-	SensorType[S1] = sensorEV3_Color;
-	wait1Msec(50);
-	SensorMode[S1] = modeEV3Color_Color;
-	wait1Msec(50);
-	nMotorEncoder[motorA] = 0;
-	nMotorEncoder[motorB] = 0;
-	nMotorEncoder[motorD] = 0;
+	sensorMotorInit();
 	promptUser();
 	returnToXHome();
-	//paperScroller(0.15875); // Scroll Paper: 1/16 inch
-	bool success = openReadPC(fin, "1.txt");
-	if (!success)
-	{
-		displayString(0, "File In not working");
-		wait1Msec(2000);
-	}
-	if(!correctPosition(INIT_MOVE))
-	{
-		return;
-	}
-	int curRow = 0;
-
-	while (curRow < ROWS)
-	{
-		int curCol = 0;
-		if(checkStart())
-		{
-			dotPen();
-		}
-		while (curCol < SPOTS_PER_ROW)
-		{
-			int goTo = toNextX(curCol);
-			displayString(0, "%d --> %d", curCol, curCol+goTo);
-			wait1Msec(500);
-			curCol += goTo;
-			if (goTo != -1)
-			{
-				driveXAxis(SIXTEENTH_INCH*goTo);
-				dotPen();
-			}
-			else
-			{
-				curCol = SPOTS_PER_ROW;
-			}
-		}
-		// reset X Pos
-    returnToXHome();
-
-		// Move down a row
-		paperScroller(SIXTEENTH_INCH);
-		curRow++;
-	}
+	string name[2] = {"1.txt", "2.txt"};
+	drawFile(name[0]);
 }
 
 void returnToXHome()
@@ -86,8 +38,10 @@ void returnToXHome()
 // 38 mm diameter
 void driveXAxis(float Dist)
 {
+	time1[T4] = 0;
 	int initialEncoder = getMotorEncoder(motorA);
-	const float GEAR_RADIUS = 1.875; // 1.9
+	int encoderLastCheck = initialEncoder;
+	const float GEAR_RADIUS = 1.875; // 1.
 	const float CM_TO_DEG = 180/(PI*GEAR_RADIUS);
 	const float GEAR_RATIO = 25/1.0;
 	float degreesToTravel = Dist*CM_TO_DEG;
@@ -96,6 +50,16 @@ void driveXAxis(float Dist)
 
 	while(nMotorEncoder(motorA) - initialEncoder < degreesToTravel*GEAR_RATIO)
 	{
+		if (time1[T4] > 1500)
+		{
+			time1[T4] = 0;
+			if(encoderLastCheck - initialEncoder < 360)
+			{
+				displayBigTextLine(0, "X-Axis jam. Exiting...");
+				playSound(soundException);
+				wait1Msec(5000);
+			}
+		}
 	}
 
 	motor[motorA] = 0;
@@ -154,10 +118,18 @@ int toNextX(int curX)
 }
 void dotPen()
 {
+	time1[T4] = 0;
 	motor[motorC] = 40;
 
 	while(!SensorValue[S3])
 	{
+		if (time1[T4] > 5000)
+		{
+			displayBigTextLine(0, "Pen dislodged. Exiting...");
+			playSound(soundException);
+			wait1Msec(5000);
+			return; // Later add exit draw function
+		}
 	}
 
 	motor[motorC] = 0;
@@ -169,6 +141,76 @@ void dotPen()
 	}
 
 	motor[motorC] = 0;
+}
+
+void drawFile(string fileName)
+{
+	bool success = openReadPC(fin, fileName);
+	if (!success)
+	{
+		displayString(0, "File In not working");
+		wait1Msec(2000);
+	}
+	if(!correctPosition(INIT_MOVE))
+	{
+		return;
+	}
+
+	int curRow = 0;
+
+	int drawStartTime = nPgmTime;
+
+	while (curRow < ROWS)
+	{
+		int curCol = 0;
+		int timeElapsed = nPgmTime - drawStartTime;
+		if(checkStart())
+		{
+			dotPen();
+		}
+		while (curCol < SPOTS_PER_ROW)
+		{
+			int goTo = toNextX(curCol);
+			curCol += goTo;
+			if (goTo != -1)
+			{
+				driveXAxis(SIXTEENTH_INCH*goTo);
+				dotPen();
+			}
+			else
+			{
+				curCol = SPOTS_PER_ROW;
+			}
+
+			if (time1[T1] > 500)
+			{
+				displayBigTextLine(0, "Time Elapsed: %0.2f s", timeElapsed);
+				time1[T1] = 0;
+			}
+		}
+		if (time1[T1] > 500)
+		{
+			displayBigTextLine(0, "Time Elapsed: %0.2f s", timeElapsed);
+			time1[T1] = 0;
+		}
+		// reset X Pos
+    returnToXHome();
+
+		// Move down a row
+		paperScroller(SIXTEENTH_INCH);
+		curRow++;
+	}
+
+	closeFilePC(fin);
+}
+
+bool checkFile(string fileName)
+{
+	bool foundFile = openReadPC(fin, fileName);
+
+	closeFilePC(fin);
+
+	return foundFile;
 }
 
 bool correctPosition(float Dist)
@@ -205,4 +247,18 @@ void promptUser()
 	while(getButtonPress(ENTER_BUTTON))
 	{}
 	eraseDisplay();
+}
+void sensorMotorInit()
+{
+	SensorType[S2] = sensorEV3_Touch;
+	wait1Msec(50);
+	SensorType[S3] = sensorEV3_Touch;
+	wait1Msec(50);
+	SensorType[S1] = sensorEV3_Color;
+	wait1Msec(50);
+	SensorMode[S1] = modeEV3Color_Color;
+	wait1Msec(50);
+	nMotorEncoder[motorA] = 0;
+	nMotorEncoder[motorB] = 0;
+	nMotorEncoder[motorD] = 0;
 }
