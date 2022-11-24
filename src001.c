@@ -39,7 +39,7 @@ task main()
 
 void returnToXHome()
 {
-		while(SensorValue[S2] != 1 && notExit)
+		while(SensorValue[xAxisLim] != 1 && notExit)
 		{
 			if(getButtonPress(ENTER_BUTTON))
 			{
@@ -93,7 +93,7 @@ void driveXAxis(float Dist)
 		if (time1[T1] > timerInterval && notExit)
 		{
 			eraseDisplay();
-			displayBigTextLine(0, "Time: %0.2f s", timeElapsed/MS_TO_S);
+			displayBigTextLine(0, "Time: %0.2f s", timeElapsed*MS_TO_S);
 			wait1Msec(10);
 			time1[T1] = 0;
 		}
@@ -185,7 +185,7 @@ void dotPen()
 	motor[motorC] = 40;
 	checkStop();
 
-	while(!SensorValue[S3] && notExit)
+	while(!SensorValue[zAxisLim] && notExit)
 	{
 		timeElapsed = nPgmTime - drawStartTime;
 		if(getButtonPress(ENTER_BUTTON))
@@ -196,7 +196,7 @@ void dotPen()
 		if (time1[T4] > 5000)
 		{
 			eraseDisplay();
-			displayBigTextLine(0, "Pen dislodged. Exiting...");
+			displayBigTextLine(0, "Pen broke");
 			playSound(soundException);
 			wait1Msec(5000);
 			notExit = false;
@@ -330,7 +330,7 @@ bool correctPosition(float Dist)
 {
 	motor[motorD] = -30;
 	time1[T4] = 0;
-	while(SensorValue[S1] != (int)colorWhite && notExit)
+	while(SensorValue[paperSensor] != (int)colorWhite && notExit)
 	{
 		if(getButtonPress(ENTER_BUTTON))
 		{
@@ -394,7 +394,7 @@ void sensorMotorInit()
 	wait1Msec(50);
 	SensorType[paperSensor] = sensorEV3_Color;
 	wait1Msec(50);
-	SensorMode[S1] = modeEV3Color_Color;
+	SensorMode[paperSensor] = modeEV3Color_Color;
 	wait1Msec(50);
 	nMotorEncoder[motorA] = 0;
 	nMotorEncoder[motorB] = 0;
@@ -412,7 +412,7 @@ void checkStop()
 void resetPen()
 {
   nMotorEncoder[motorC] = 0;
-  if (SensorValue[S3])
+  if (SensorValue[zAxisLim])
   {
       //lift the pen up by 3 cm
       motor[motorC] = -40;
