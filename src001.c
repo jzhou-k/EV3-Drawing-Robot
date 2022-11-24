@@ -4,6 +4,9 @@ const int SPOTS_PER_ROW = 136; // Number of possible dots in a row
 const int ROWS = 176; // Max number of rows to draw
 const float SIXTEENTH_INCH = 0.15875;
 const float INIT_MOVE = 5.0; // cm distance from color sensor
+
+
+//function prototypes  
 void driveXAxis(float Dist);
 void paperScroller(float Dist);
 bool checkStart();
@@ -48,11 +51,14 @@ void driveXAxis(float Dist)
 
 	motor[motorA] = 30;
 
+	//keep powering motor until it gets to the distance desired 
 	while(nMotorEncoder(motorA) - initialEncoder < degreesToTravel*GEAR_RATIO)
-	{
+	{	
+		//Error checking code 
 		if (time1[T4] > 1500)
 		{
 			time1[T4] = 0;
+			//if encoder has not moved, plays error sound and exit sound 
 			if(encoderLastCheck - initialEncoder < 360)
 			{
 				displayBigTextLine(0, "X-Axis jam. Exiting...");
@@ -65,6 +71,9 @@ void driveXAxis(float Dist)
 	motor[motorA] = 0;
 }
 
+
+
+//Rolls paper by distance passed in parameter. 
 void paperScroller(float Dist)
 {
 	int initialEncoder = getMotorEncoder(motorD);
@@ -74,7 +83,7 @@ void paperScroller(float Dist)
 	float degreesToTravel = Dist*CM_TO_DEG;
 
 	motor[motorD] = -30;
-
+	
 	while(abs(nMotorEncoder(motorD) - initialEncoder) < degreesToTravel*GEAR_RATIO)
 	{
 	}
@@ -82,19 +91,21 @@ void paperScroller(float Dist)
 	motor[motorD] = 0;
 }
 
+//check if the beginning of the file should be dotted 
 bool checkStart()
 {
-	int dotPos = 0;
-	readIntPC(fin, dotPos);
+	readIntPC(fin, 0);
 	if(dotPos == 1)
 	{
 		return true;
 	}
-	else
-	{
-		return false;
-	}
+		
+	return false;
+
 }
+
+
+
 int toNextX(int curX)
 {
 	int evalValue = 0; // Value read from text file; 0 or 1
@@ -106,10 +117,10 @@ int toNextX(int curX)
 		if (evalValue == 1)
 		{
 			return (evalX - curX);
-	  }
-	  else
-	  {
-	  	evalX++;
+	  	}
+	  	else
+	  	{
+	  		evalX++;
 		}
 	}
 
@@ -184,12 +195,14 @@ void drawFile(string fileName)
 
 			if (time1[T1] > 500)
 			{
+				wait1Msec(5);
 				displayBigTextLine(0, "Time Elapsed: %0.2f s", timeElapsed);
 				time1[T1] = 0;
 			}
 		}
 		if (time1[T1] > 500)
 		{
+			wait1Msec(5);
 			displayBigTextLine(0, "Time Elapsed: %0.2f s", timeElapsed);
 			time1[T1] = 0;
 		}
@@ -248,6 +261,10 @@ void promptUser()
 	{}
 	eraseDisplay();
 }
+
+
+
+//initialize all 
 void sensorMotorInit()
 {
 	SensorType[S2] = sensorEV3_Touch;
