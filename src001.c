@@ -79,8 +79,8 @@ void driveXAxis(float Dist)
 		{
 			time1[T4] = 0;
 			checkStop();
-			encoderLastCheck = nMotorEncoder[motorA];
-			if(encoderLastCheck - initialEncoder < 360 && notExit)
+			encoderLastCheck = getMotorEncoder(motorA);
+			if(encoderLastCheck - initialEncoder < 60 && notExit)
 			{
 				displayBigTextLine(0, "X-Axis jam. Exiting...");
 				checkStop();
@@ -286,9 +286,9 @@ void drawFile(string fileName)
 			if (time1[T1] > 500 && notExit)
 			{
 				checkStop();
-				displayBigTextLine(0, "Time Elapsed: %0.2f s", timeElapsed);
+				displayBigTextLine(0, "Elapsed: %0.2f s", timeElapsed);
 				checkStop();
-				wait10Msec(1);
+				wait1Msec(10);
 				checkStop();
 				time1[T1] = 0;
 				checkStop();
@@ -297,9 +297,9 @@ void drawFile(string fileName)
 		if (time1[T1] > 500 && notExit)
 		{
 			checkStop();
-			displayBigTextLine(0, "Time Elapsed: %0.2f s", timeElapsed);
+			displayBigTextLine(0, "Elapsed: %0.2f s", timeElapsed);
 			checkStop();
-			wait10Msec(1);
+			wait1Msec(10);
 			checkStop();
 			time1[T1] = 0;
 			checkStop();
