@@ -407,24 +407,13 @@ void checkStop()
 
 void resetPen()
 {
-	int lastEncoder = getMotorEncoder(motorC);
-	bool penAtTop = false;
-	time1[T4] = 0;
-	motor[motorC] = -40;
-	while(time1[T4] < 1500)
-	{
-	}
-	/*while(!penAtTop)
-	{
-		if(time1[T4] > 100)
-		{
-			time1[T4] = 0;
-			if(lastEncoder == nMotorEncoder(motorC))
-			{
-				penAtTop = true;
-			}
-			lastEncoder = getMotorEncoder(motorC);
-		}
-	}*/
-	motor[motorC] = 0;
+  nMotorEncoder[motorC] = 0;
+  if (SensorValue[S3])
+  {
+      //lift the pen up by 3 cm
+      motor[motorC] = -40;
+      while (nMotorEncoder[motorC] > (1.1811/SIXTEENTH_INCH))
+      {
+      }
+  }
 }
