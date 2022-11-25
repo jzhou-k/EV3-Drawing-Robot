@@ -214,7 +214,7 @@ void dotPen()
 	motor[motorC] = 0;
 	motor[motorC] = -40;
 	checkStop();
-	while(nMotorEncoder(motorC) > 0)
+	while (nMotorEncoder[motorC] > ((0.393701)/SIXTEENTH_INCH)*360)
 	{
 		timeElapsed = nPgmTime - drawStartTime;
 		if(getButtonPress(ENTER_BUTTON))
@@ -416,7 +416,7 @@ void resetPen()
   {
       //lift the pen up by 3 cm
       motor[motorC] = -40;
-      while (nMotorEncoder[motorC] > (1.1811/SIXTEENTH_INCH))
+      while (nMotorEncoder[motorC] > ((0.393701)/SIXTEENTH_INCH)*360)
       {
       }
   }
