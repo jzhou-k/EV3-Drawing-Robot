@@ -3,7 +3,7 @@ Filename: EV3_FileIO.c
 Date: November 7, 2016
 File Version: 1.0
 
-This file selects the EV3 version of the ASCII conversion functions 
+This file selects the EV3 version of the ASCII conversion functions
 defined in PC_FileIO.c so that files read or written on a PC.
 Whitespace (space, tab, enter) is needed between values.
 
@@ -28,6 +28,7 @@ Ver  Date       Comment
 1.0  Nov  7/16  original release
 
 **********************************************************************/
+#pragma once
 #pragma SystemFile
 
 // select EV3 set of functions

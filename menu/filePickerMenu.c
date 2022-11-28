@@ -1,7 +1,8 @@
 #pragma once
 #include "menuStruct.c"
 #include "../lib/EV3_FileIO.c"
-#include "../draw/test.c"
+//#include "../draw/test.c"
+#include "../draw/src001.c"
 
 // sets up menu struct for the file picker menu
 void filePickerMenuSetup(struct menuList &self)
@@ -84,8 +85,13 @@ void fileMenuIntegrator(struct menuList &self, int &currentMinFile, bool init = 
 		for (; (numFiles < MAX_FILE_DISPLAY + currentMinFile && checkFile(fileName)); ++numFiles)
 		{
 			stringFormat(fileName, "%d.txt", numFiles);
+			string tempFile;
 			string tempFileName;
-			stringFormat(tempFileName, "%d.txt", numFiles);
+			TFileHandle tempFin;
+			stringFormat(tempFile, "%d.txt", numFiles);
+			openReadPC(tempFin, tempFile);
+			readTextPC(tempFin, tempFileName);
+			closeFilePC(tempFin);
 			self.indexNames[numFiles - currentMinFile + 1] = tempFileName;
 			updateFiles = false;
 		}
@@ -115,7 +121,8 @@ void filePickerMenuRun()
 			case 3:
 				string fileName = "";
 				stringFormat(fileName, "%d.txt", currentMinFile+filePickerMenu.index-1);
-				EV3draw(fileName);
+				//EV3draw(fileName);
+				drawFile(fileName);
 				displayUpdate = true;
 				break;
 		}

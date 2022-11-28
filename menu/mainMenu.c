@@ -6,9 +6,9 @@
 // sets up menu struct for the main menu
 void mainMenuSetup(struct menuList &self)
 {
-	const int MAIN_MENU_LENGTH = 3;
+	const int MAIN_MENU_LENGTH = 2;
 	menuConstruct(self);
-	string indexNames[MAIN_MENU_LENGTH] = {"Run file", "Move axies", "Exit"};
+	string indexNames[MAIN_MENU_LENGTH] = {"Run file", "Exit"}; // "Move axies",
 	for (int name = 0; name < MAIN_MENU_LENGTH; name++)
 	{
 		self.indexNames[name] = indexNames[name];
@@ -39,11 +39,11 @@ int mainMenuExecute(struct menuList &self)
 			filePickerMenuRun();
 			return 2;
 			break;
-		case 1:
+		case -1:
 			moveAxiesMenuRun();
 			return 2;
 			break;
-		case 2:
+		case 1:
 			return 1;
 			break;
 		}

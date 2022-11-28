@@ -1,5 +1,5 @@
 #include "menu/mainMenu.c"
-#include "ports.h"
+#include "lib/ports.h"
 
 void configureAllSensors();
 
