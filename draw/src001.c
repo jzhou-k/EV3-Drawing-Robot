@@ -3,37 +3,36 @@
 #include "../lib/ports.h";
 
 TFileHandle fin;
-int timeElapsed = 0;
-int drawStartTime = 0;
+int timeElapsed = 0; // Time elapsed since start of drawing
+int drawStartTime = 0; // Start of drawing
 const float MS_TO_S = 1 / 1000.0;
-const int timerInterval = 250;
+const int timerInterval = 250; // Display timer interval
 const int SPOTS_PER_ROW = 136; // Number of possible dots in a row
 const int ROWS = 176;		   // Max number of rows to draw
-const float SIXTEENTH_INCH = 0.15875;
+const float SIXTEENTH_INCH_CM = 0.15875; // Sixteenth of an inch in cm
 const float INIT_MOVE = 5.0; // cm distance from color sensor
-bool notExit;
+bool notExit; // global variable that controls exiting the drawing loop
+
+// Function prototypes
+void returnToXHome();
 void driveXAxis(float Dist);
 void paperScroller(float Dist);
 bool checkStart();
 int toNextX(int curX);
-void drawFile(string fileName);
-void returnToXHome();
 void dotPen();
+void drawFile(string fileName);
 bool correctPosition(float Dist);
 void promptUser();
-//void sensorMotorInit();
-void checkStop();
-void resetPen();
 
 /*
 task main()
 {
-	sensorMotorInit();
-	string name[2] = {"1.txt", "2.txt"};
-	drawFile(name[0]);
 }
 */
 
+/*
+Returns the x-axis mover to the starting position
+*/
 void returnToXHome()
 {
 	while (SensorValue[xAxisLim] != 1 && notExit)
@@ -43,38 +42,42 @@ void returnToXHome()
 			break;
 		}
 		motor[motorA] = -50;
-		checkStop();
 	}
 	motor[motorA] = 0;
-	checkStop();
 	nMotorEncoder[motorA] = 0;
-	checkStop();
 }
-// 5:3 --> 25:9 --> For every 25 deg motor encoder, 9 deg gear
-//  38 mm diameter
+
+/*
+Move the x-axis mover "Dist" amount, where dist is in CM
+*/
 void driveXAxis(float Dist)
 {
-	time1[T4] = 0;
+	time1[T4] = 0; // For error checking
 	int initialEncoder = getMotorEncoder(motorA);
-	int encoderLastCheck = initialEncoder;
-	const float GEAR_RADIUS = 1.875;
+	int encoderLastCheck = initialEncoder; // Last time the encoder was checked
+	const float GEAR_RADIUS = 1.875; // The gear radius in cm
 	const float CM_TO_DEG = 180 / (PI * GEAR_RADIUS);
-	const float GEAR_RATIO = 25 / 1.0;
+	const float GEAR_RATIO = 25; // 25:1 gear ratio
 	float degreesToTravel = Dist * CM_TO_DEG;
 	motor[motorA] = 30;
+
 	while (nMotorEncoder(motorA) - initialEncoder < degreesToTravel * GEAR_RATIO && notExit)
 	{
 		timeElapsed = nPgmTime - drawStartTime;
+
+		// check for program exit
 		if (getButtonPress(ENTER_BUTTON))
 		{
 			notExit = false;
 			break;
 		}
+
+		// For checking jam
 		if (time1[T4] > 1500)
 		{
 			time1[T4] = 0;
-			checkStop();
 			encoderLastCheck = getMotorEncoder(motorA);
+
 			if (encoderLastCheck - initialEncoder < 60 && notExit)
 			{
 				eraseDisplay();
@@ -87,6 +90,7 @@ void driveXAxis(float Dist)
 			}
 		}
 
+		// For displaying draw time
 		if (time1[T1] > timerInterval && notExit)
 		{
 			eraseDisplay();
@@ -96,38 +100,36 @@ void driveXAxis(float Dist)
 		}
 	}
 	motor[motorA] = 0;
-	checkStop();
 }
-
+/*
+Turns the wheels "Dist" amount (in CM) to
+move paper "Dist" amount
+*/
 void paperScroller(float Dist)
 {
-	checkStop();
 	int initialEncoder = getMotorEncoder(motorD);
-	const float WHEEL_RADIUS = 2.8; // May need to be updated
+	const float WHEEL_RADIUS = 2.8;
 	const float CM_TO_DEG = 180 / (PI * WHEEL_RADIUS);
-	const float GEAR_RATIO = 15;
+	const float GEAR_RATIO = 15; // 15:1 gear ratio
 	float degreesToTravel = Dist * CM_TO_DEG;
-	checkStop();
 	motor[motorD] = -30;
-	checkStop();
+
 	while (abs(nMotorEncoder(motorD) - initialEncoder) < degreesToTravel * GEAR_RATIO && notExit)
 	{
+		// check for program exit
 		if (getButtonPress(ENTER_BUTTON))
 		{
 			notExit = false;
 			break;
 		}
 	}
-	checkStop();
 	motor[motorD] = 0;
-	checkStop();
 }
 
+// check if current position is to be dotted
 bool checkStart()
 {
-	checkStop();
 	int dotPos = 0;
-	checkStop();
 	readIntPC(fin, dotPos);
 	if (dotPos == 1)
 	{
@@ -135,49 +137,52 @@ bool checkStart()
 	}
 	return false;
 }
+
 int toNextX(int curX)
 {
-	checkStop();
 	int evalValue = 0;	  // Value read from text file; 0 or 1
-	int evalX = curX + 1; // Current x-position being evaluated
-	checkStop();
+	int evalX = curX + 1; // Current x-position being evaluated in file
 
 	while (evalX < SPOTS_PER_ROW && notExit)
 	{
+		// check for program exit
 		if (getButtonPress(ENTER_BUTTON))
 		{
 			notExit = false;
 			break;
 		}
-		checkStop();
+
 		readIntPC(fin, evalValue);
+		// if found dot to print
 		if (evalValue == 1)
 		{
-			checkStop();
 			return (evalX - curX);
 		}
 		else
 		{
-			checkStop();
 			evalX++;
 		}
-		checkStop();
 	}
-	checkStop();
 	return -1; // Signal no dot found in remaining row
 }
+
+/*
+Moves the pen down until the touch sensor is
+triggered, at which point the pen will retract
+5/16 of an inch
+*/
 void dotPen()
 {
 	nMotorEncoder[zAxis] = 0;
-	checkStop();
 	time1[T4] = 0;
-	checkStop();
-	motor[zAxis] = 100;
-	checkStop();
+	motor[zAxis] = 60;
 
+	// while touch sensor not pressed
 	while (!SensorValue[zAxisLim] && notExit)
 	{
 		timeElapsed = nPgmTime - drawStartTime;
+
+		// check for program exit
 		if (getButtonPress(ENTER_BUTTON))
 		{
 			notExit = false;
@@ -192,8 +197,9 @@ void dotPen()
 			wait1Msec(5000);
 			notExit = false;
 			break;
-			// add exit draw function
 		}
+
+		// For drawing time display
 		if (time1[T1] > timerInterval && notExit)
 		{
 			eraseDisplay();
@@ -202,12 +208,15 @@ void dotPen()
 			time1[T1] = 0;
 		}
 	}
-	motor[zAxis] = -100;
-	checkStop();
+	motor[zAxis] = -60;
 	nMotorEncoder[zAxis] = 0;
-	while (abs(nMotorEncoder[zAxis]) < 6 * 360)
+	// For retracting 5/16 of an inch since one
+	// rotation is 1/16 of an inch
+	while (abs(nMotorEncoder[zAxis]) < 5 * 360)
 	{
 		timeElapsed = nPgmTime - drawStartTime;
+
+		// Check to exit program
 		if (getButtonPress(ENTER_BUTTON))
 		{
 			notExit = false;
@@ -221,30 +230,26 @@ void dotPen()
 			time1[T1] = 0;
 		}
 	}
-	checkStop();
 	motor[zAxis] = 0;
-	checkStop();
 }
-int bs = 0;
+
+int temp = 0;
 void drawFile(string fileName)
 {
 	notExit = true;
-	checkStop();
 	bool success = openReadPC(fin, fileName);
-	checkStop();
 	string drawingName = "";
 	int numPages = 0;
 	readTextPC(fin, drawingName);
 	readIntPC(fin, numPages);
-	readIntPC(fin, bs);
+	readIntPC(fin, temp); // Required to ensure file is read properly
+
 	if (!success && notExit)
 	{
-		checkStop();
 		displayString(0, "File In not working");
-		checkStop();
 		wait1Msec(2000);
-		checkStop();
 	}
+
 	drawStartTime = nPgmTime;
 
 	for (int curPage = 1; curPage <= numPages; curPage++)
@@ -253,13 +258,14 @@ void drawFile(string fileName)
 		promptUser();
 		if (!correctPosition(INIT_MOVE) && notExit)
 		{
-			checkStop();
 			return;
 		}
 		returnToXHome();
 		int curRow = 0;
 		while (curRow < ROWS && notExit)
 		{
+
+			// Check to exit program
 			if (getButtonPress(ENTER_BUTTON))
 			{
 				closeFilePC(fin);
@@ -275,6 +281,8 @@ void drawFile(string fileName)
 			while (curCol < SPOTS_PER_ROW && notExit)
 			{
 				timeElapsed = nPgmTime - drawStartTime;
+
+				// Check to exit program
 				if (getButtonPress(ENTER_BUTTON))
 				{
 					closeFilePC(fin);
@@ -282,15 +290,11 @@ void drawFile(string fileName)
 					wait1Msec(5000);
 					break;
 				}
-				checkStop();
 				int goTo = toNextX(curCol);
-				checkStop();
 				curCol += goTo;
-				checkStop();
 				if (goTo != -1 && notExit)
 				{
-					checkStop();
-					driveXAxis(SIXTEENTH_INCH * goTo);
+					driveXAxis(SIXTEENTH_INCH_CM * goTo);
 					dotPen();
 				}
 				else
@@ -316,55 +320,50 @@ void drawFile(string fileName)
 			// reset X Pos
 			returnToXHome();
 			// Move down a row
-			paperScroller(SIXTEENTH_INCH);
+			paperScroller(SIXTEENTH_INCH_CM);
 			curRow++;
 		}
 	}
 	closeFilePC(fin);
 	notExit = false;
+	// To ensure EV3 exits the program safely
 	wait1Msec(5000);
 }
-
+/*
+Checks if paper is properly placed in position
+*/
 bool correctPosition(float Dist)
 {
 	motor[motorD] = -30;
 	time1[T4] = 0;
 	while (SensorValue[paperSensor] != (int)colorWhite && notExit)
 	{
+		// Check for exit drawing
 		if (getButtonPress(ENTER_BUTTON))
 		{
 			closeFilePC(fin);
 			notExit = false;
 			break;
 		}
-		checkStop();
+
 		if (time1[T4] > 1000 * 6 && notExit)
 		{
-			checkStop();
 			motor[motorD] = 0;
-			checkStop();
 			eraseDisplay();
-			checkStop();
 			displayString(5, "ERROR");
-			checkStop();
 			wait1Msec(10000);
-			checkStop();
 			return false;
-			checkStop();
 		}
 	}
-	checkStop();
 	motor[motorD] = 0;
-	checkStop();
 	wait1Msec(1000);
-	checkStop();
 	paperScroller(Dist);
-	checkStop();
 	return true;
 }
+
+// Tell user to put paper under wheels
 void promptUser()
 {
-	checkStop();
 	eraseDisplay();
 	displayString(2, "PLACE PAPER ");
 	displayString(3, "RIGHT UNDER ");
@@ -372,53 +371,11 @@ void promptUser()
 	displayString(5, "PRESS RIGHT");
 	displayString(6, "ONCE IN CORRECT");
 	displayString(7, "POSITION");
-	checkStop();
 	while (!getButtonPress(RIGHT_BUTTON) && notExit)
 	{
-		checkStop();
 	}
 	while (getButtonPress(RIGHT_BUTTON) && notExit)
 	{
-		checkStop();
 	}
-	checkStop();
 	eraseDisplay();
-	checkStop();
-}
-/*
-void sensorMotorInit()
-{
-	SensorType[xAxisLim] = sensorEV3_Touch; // x axis touch
-	wait1Msec(50);
-	SensorType[zAxisLim] = sensorEV3_Touch; // pen touch
-	wait1Msec(50);
-	SensorType[paperSensor] = sensorEV3_Color;
-	wait1Msec(50);
-	SensorMode[paperSensor] = modeEV3Color_Color;
-	wait1Msec(50);
-	nMotorEncoder[motorA] = 0;
-	nMotorEncoder[motorB] = 0;
-	nMotorEncoder[motorD] = 0;
-}*/
-
-void checkStop()
-{
-	if (getButtonPress(ENTER_BUTTON))
-	{
-		closeFilePC(fin);
-		notExit = false;
-	}
-}
-
-void resetPen()
-{
-	motor[zAxis] = 60;
-	while(!SensorValue(zAxisLim))
-	{}
-	nMotorEncoder[zAxis] = 0;
-	// lift the pen up by 3 cm
-	motor[motorC] = -60;
-	while (nMotorEncoder[zAxis] > 4 * 360)
-	{}
-	motor[zAxis] = 0;
 }
