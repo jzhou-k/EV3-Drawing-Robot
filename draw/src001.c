@@ -23,12 +23,7 @@ void dotPen();
 void drawFile(string fileName);
 bool correctPosition(float Dist);
 void promptUser();
-
-/*
-task main()
-{
-}
-*/
+void displayElapsed();
 
 /*
 Returns the x-axis mover to the starting position
@@ -39,6 +34,9 @@ void returnToXHome()
 	{
 		if (getButtonPress(ENTER_BUTTON))
 		{
+			closeFilePC(fin);
+			notExit = false;
+			wait1Msec(5000); // Required to ensure proper exit
 			break;
 		}
 		motor[motorA] = -50;
@@ -54,7 +52,6 @@ void driveXAxis(float Dist)
 {
 	time1[T4] = 0; // For error checking
 	int initialEncoder = getMotorEncoder(motorA);
-	int encoderLastCheck = initialEncoder; // Last time the encoder was checked
 	const float GEAR_RADIUS = 1.875; // The gear radius in cm
 	const float CM_TO_DEG = 180 / (PI * GEAR_RADIUS);
 	const float GEAR_RATIO = 25; // 25:1 gear ratio
@@ -63,22 +60,25 @@ void driveXAxis(float Dist)
 
 	while (nMotorEncoder(motorA) - initialEncoder < degreesToTravel * GEAR_RATIO && notExit)
 	{
+		// Take difference to find the time elapsed since drawing started
 		timeElapsed = nPgmTime - drawStartTime;
 
 		// check for program exit
 		if (getButtonPress(ENTER_BUTTON))
 		{
+			closeFilePC(fin);
 			notExit = false;
+			wait1Msec(5000);
 			break;
 		}
 
-		// For checking jam
+		// For checking jam after 15 seconds
 		if (time1[T4] > 1500)
 		{
 			time1[T4] = 0;
-			encoderLastCheck = getMotorEncoder(motorA);
 
-			if (encoderLastCheck - initialEncoder < 60 && notExit)
+			// Check if encoder has not changed by atleast 60 degrees
+			if (nMotorEncoder(motorA) - initialEncoder < 60 && notExit)
 			{
 				eraseDisplay();
 				displayBigTextLine(0, "X-Axis jam. Exiting...");
@@ -91,16 +91,11 @@ void driveXAxis(float Dist)
 		}
 
 		// For displaying draw time
-		if (time1[T1] > timerInterval && notExit)
-		{
-			eraseDisplay();
-			displayBigTextLine(0, "Time: %0.2f s", timeElapsed * MS_TO_S);
-			wait1Msec(10);
-			time1[T1] = 0;
-		}
+		displayElapsed();
 	}
 	motor[motorA] = 0;
 }
+
 /*
 Turns the wheels "Dist" amount (in CM) to
 move paper "Dist" amount
@@ -119,14 +114,17 @@ void paperScroller(float Dist)
 		// check for program exit
 		if (getButtonPress(ENTER_BUTTON))
 		{
+			closeFilePC(fin);
 			notExit = false;
+			wait1Msec(5000);
 			break;
 		}
 	}
 	motor[motorD] = 0;
 }
 
-// check if current position is to be dotted
+/* check if current position is to be dotted
+*/
 bool checkStart()
 {
 	int dotPos = 0;
@@ -138,6 +136,8 @@ bool checkStart()
 	return false;
 }
 
+/* Find the next dot in the row, if it does not exit return -1
+*/
 int toNextX(int curX)
 {
 	int evalValue = 0;	  // Value read from text file; 0 or 1
@@ -148,7 +148,9 @@ int toNextX(int curX)
 		// check for program exit
 		if (getButtonPress(ENTER_BUTTON))
 		{
+			closeFilePC(fin);
 			notExit = false;
+			wait1Msec(5000);
 			break;
 		}
 
@@ -185,9 +187,12 @@ void dotPen()
 		// check for program exit
 		if (getButtonPress(ENTER_BUTTON))
 		{
+			closeFilePC(fin);
 			notExit = false;
+			wait1Msec(5000);
 			break;
 		}
+		// If after 5 seconds it is unable to complete the task
 		if (time1[T4] > 5000)
 		{
 			eraseDisplay();
@@ -200,13 +205,7 @@ void dotPen()
 		}
 
 		// For drawing time display
-		if (time1[T1] > timerInterval && notExit)
-		{
-			eraseDisplay();
-			displayBigTextLine(0, "Time: %0.2f s", timeElapsed * MS_TO_S);
-			wait1Msec(10);
-			time1[T1] = 0;
-		}
+		displayElapsed();
 	}
 	motor[zAxis] = -60;
 	nMotorEncoder[zAxis] = 0;
@@ -219,21 +218,21 @@ void dotPen()
 		// Check to exit program
 		if (getButtonPress(ENTER_BUTTON))
 		{
+			closeFilePC(fin);
 			notExit = false;
+			wait1Msec(5000);
 			break;
 		}
-		if (time1[T1] > timerInterval && notExit)
-		{
-			eraseDisplay();
-			displayBigTextLine(0, "Time: %0.2f s", timeElapsed * MS_TO_S);
-			wait1Msec(10);
-			time1[T1] = 0;
-		}
+		displayElapsed();
 	}
 	motor[zAxis] = 0;
 }
 
-int temp = 0;
+int temp = 0; // unused temporary holder
+/*
+Loops through each row and column of the drawing
+Calls all the functions required to draw
+*/
 void drawFile(string fileName)
 {
 	notExit = true;
@@ -250,8 +249,10 @@ void drawFile(string fileName)
 		wait1Msec(2000);
 	}
 
+	// Mark the time when the drawing starts
 	drawStartTime = nPgmTime;
 
+	// For each page required
 	for (int curPage = 1; curPage <= numPages; curPage++)
 	{
 		dotPen();
@@ -262,6 +263,8 @@ void drawFile(string fileName)
 		}
 		returnToXHome();
 		int curRow = 0;
+
+		// For each row in a page
 		while (curRow < ROWS && notExit)
 		{
 
@@ -270,14 +273,18 @@ void drawFile(string fileName)
 			{
 				closeFilePC(fin);
 				notExit = false;
+				wait1Msec(5000);
 				break;
 			}
+
 			int curCol = 0;
 			if (checkStart())
 			{
 				dotPen();
 			}
+			// Find the time passed since start
 			timeElapsed = nPgmTime - drawStartTime;
+			// For each column in a row
 			while (curCol < SPOTS_PER_ROW && notExit)
 			{
 				timeElapsed = nPgmTime - drawStartTime;
@@ -290,6 +297,7 @@ void drawFile(string fileName)
 					wait1Msec(5000);
 					break;
 				}
+
 				int goTo = toNextX(curCol);
 				curCol += goTo;
 				if (goTo != -1 && notExit)
@@ -302,21 +310,9 @@ void drawFile(string fileName)
 					curCol = SPOTS_PER_ROW;
 				}
 
-				if (time1[T1] > timerInterval && notExit)
-				{
-					eraseDisplay();
-					displayBigTextLine(0, "Time: %0.2f s", timeElapsed * MS_TO_S);
-					wait1Msec(10);
-					time1[T1] = 0;
-				}
+				displayElapsed();
 			}
-			if (time1[T1] > timerInterval && notExit)
-			{
-				eraseDisplay();
-				displayBigTextLine(0, "Time: %0.2f s", timeElapsed * MS_TO_S);
-				wait1Msec(10);
-				time1[T1] = 0;
-			}
+			displayElapsed();
 			// reset X Pos
 			returnToXHome();
 			// Move down a row
@@ -329,6 +325,7 @@ void drawFile(string fileName)
 	// To ensure EV3 exits the program safely
 	wait1Msec(5000);
 }
+
 /*
 Checks if paper is properly placed in position
 */
@@ -343,14 +340,17 @@ bool correctPosition(float Dist)
 		{
 			closeFilePC(fin);
 			notExit = false;
+			wait1Msec(5000);
 			break;
 		}
 
+		// If after 6 seconds the sensor is unable to detect thepaper
 		if (time1[T4] > 1000 * 6 && notExit)
 		{
 			motor[motorD] = 0;
 			eraseDisplay();
 			displayString(5, "ERROR");
+			playSound(soundException);
 			wait1Msec(10000);
 			return false;
 		}
@@ -378,4 +378,15 @@ void promptUser()
 	{
 	}
 	eraseDisplay();
+}
+
+void displayElapsed()
+{
+	if (time1[T1] > timerInterval && notExit)
+		{
+			eraseDisplay();
+			displayBigTextLine(0, "Time: %0.2f s", timeElapsed * MS_TO_S);
+			wait1Msec(10);
+			time1[T1] = 0;
+		}
 }
