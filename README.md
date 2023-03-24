@@ -1,9 +1,12 @@
 # EV3-Drawing-Robot
 
-![Alt Text](link)
-![Alt Text](link)
+![Alt Text](https://github.com/jzhou-k/EV3-Drawing-Robot/blob/master/images/drawingRobot.jpg)
+![Alt Text](https://github.com/jzhou-k/EV3-Drawing-Robot/blob/master/images/ev3%20robot.gif)
+
+![Alt Text](https://github.com/jzhou-k/EV3-Drawing-Robot/blob/master/images/cropped.png)
 Original image of our digital computations professor 
-![Alt Text](link)
+
+![Alt Text](https://github.com/jzhou-k/EV3-Drawing-Robot/blob/master/images/dotted.jpg)
 Dotted image from the robot 
 
 
